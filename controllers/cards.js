@@ -1,18 +1,33 @@
 // Файл контроллеров
 
+const { IncorrectInputError, NotFoundError } = require('../errors/errors');
 // Импортируем модель 'card'
 const Card = require('../models/card');
+
+const ERROR_CODE = 500;
+// Данные для обработки ошибок
+const incorrectInputError = new IncorrectInputError('Некорректные входные данные');
+const notFoundError = new NotFoundError('Запрашиваемый пользователь не найден');
 
 module.exports.getAllCards = (req, res) => {
   Card.find({})
     .then((cards) => res.send({ data: cards }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch(() => {
+      return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
+    });
 };
 
 module.exports.deleteNecessaryCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => res.send({ data: card }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((err) => {
+      if (err.name === 'NotFoundError') {
+        // 404
+        return res.status(notFoundError.statusCode).send(notFoundError.message);
+      } else {
+        return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
+      }
+    });
 };
 
 module.exports.postNewCard = (req, res) => {
@@ -21,7 +36,14 @@ module.exports.postNewCard = (req, res) => {
 
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.send({ data: card }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((err) => {
+      if (err.name === 'IncorrectInputError') {
+        // 400
+        return res.status(incorrectInputError.statusCode).send(incorrectInputError.message);
+      } else {
+        return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
+      }
+    });
 };
 
 // "new: true" - вернет видоизмененный массив, а не оригинал
@@ -30,7 +52,17 @@ module.exports.putLikeToCard = (req, res) => {
     $addToSet: { likes: req.user._id }
   }, { new: true })
     .then((card) => res.send({ data: card }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((err) => {
+      if (err.name === 'IncorrectInputError') {
+        // 400
+        return res.status(incorrectInputError.statusCode).send(incorrectInputError.message);
+      } else if (err.name === 'NotFoundError') {
+        // 404
+        return res.status(notFoundError.statusCode).send(notFoundError.message);
+      } else {
+        return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
+      }
+    });
 };
 
 module.exports.deleteLikeOfCard = (req, res) => {
@@ -38,5 +70,15 @@ module.exports.deleteLikeOfCard = (req, res) => {
     $pull: { likes: req.user._id }
   }, { new: true })
     .then((card) => res.send({ data: card }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((err) => {
+      if (err.name === 'IncorrectInputError') {
+        // 400
+        return res.status(incorrectInputError.statusCode).send(incorrectInputError.message);
+      } else if (err.name === 'NotFoundError') {
+        // 404
+        return res.status(notFoundError.statusCode).send(notFoundError.message);
+      } else {
+        return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
+      }
+    });
 };

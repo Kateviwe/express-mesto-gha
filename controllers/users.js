@@ -1,22 +1,33 @@
 // Файл контроллеров
 
-// Создание ошибок
-const err = new Error("Объект не найден");
-err.name = "NotFoundError";
-
+const { IncorrectInputError, NotFoundError } = require('../errors/errors');
 // Импортируем модель 'user'
 const User = require('../models/user');
+
+const ERROR_CODE = 500;
+// Данные для обработки ошибок
+const incorrectInputError = new IncorrectInputError('Некорректные входные данные');
+const notFoundError = new NotFoundError('Запрашиваемый пользователь не найден');
 
 module.exports.getAllUsers = (req, res) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch(() => {
+      return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
+    });
 };
 
 module.exports.getNecessaryUser = (req, res) => {
   User.findById(req.params.userId)
     .then((user) => res.send({ data: user }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((err) => {
+      if (err.name === 'NotFoundError') {
+        // 404
+        return res.status(notFoundError.statusCode).send(notFoundError.message);
+      } else {
+        return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
+      }
+    });
 };
 
 module.exports.postNewUser = (req, res) => {
@@ -25,7 +36,14 @@ module.exports.postNewUser = (req, res) => {
 
   User.create({ name, about, avatar })
     .then((user) => res.send({ data: user }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((err) => {
+      if (err.name === 'IncorrectInputError') {
+        // 400
+        return res.status(incorrectInputError.statusCode).send(incorrectInputError.message);
+      } else {
+        return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
+      }
+    });
 };
 
 module.exports.patchUserInfo = (req, res) => {
@@ -37,7 +55,17 @@ module.exports.patchUserInfo = (req, res) => {
     about
   }, { new: true })
     .then((user) => res.send({ data: user }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((err) => {
+      if (err.name === 'IncorrectInputError') {
+        // 400
+        return res.status(incorrectInputError.statusCode).send(incorrectInputError.message);
+      } else if (err.name === 'NotFoundError') {
+        // 404
+        return res.status(notFoundError.statusCode).send(notFoundError.message);
+      } else {
+        return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
+      }
+    });
 };
 
 module.exports.patchUserAvatar = (req, res) => {
@@ -48,5 +76,15 @@ module.exports.patchUserAvatar = (req, res) => {
     avatar
   }, { new: true })
     .then((user) => res.send({ data: user }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((err) => {
+      if (err.name === 'IncorrectInputError') {
+        // 400
+        return res.status(incorrectInputError.statusCode).send(incorrectInputError.message);
+      } else if (err.name === 'NotFoundError') {
+        // 404
+        return res.status(notFoundError.statusCode).send(notFoundError.message);
+      } else {
+        return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
+      }
+    });
 };
