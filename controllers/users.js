@@ -1,5 +1,9 @@
 // Файл контроллеров
 
+// Создание ошибок
+const err = new Error("Объект не найден");
+err.name = "NotFoundError";
+
 // Импортируем модель 'user'
 const User = require('../models/user');
 
