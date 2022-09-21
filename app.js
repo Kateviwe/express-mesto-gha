@@ -31,5 +31,5 @@ app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
 
 app.listen(PORT, () => {
-  console.log(`${PORT}`);
+  console.log(`Вы подключились к порту: ${PORT}`);
 });
