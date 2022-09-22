@@ -21,7 +21,7 @@ mongoose.connect('mongodb://localhost:27017/mestodb');
 // Временное решение авторизации: добавляет в каждый запрос объект 'user'
 app.use((req, res, next) => {
   req.user = {
-    _id: '6329b3ed83647e2a2922344a',
+    _id: '632c9b45f5c045c9bd7a39af',
   };
 
   next();

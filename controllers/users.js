@@ -6,12 +6,11 @@ const User = require('../models/user');
 
 const ERROR_CODE = 500;
 // Данные для обработки ошибок
-const incorrectInputError = new IncorrectInputError('Некорректные входные данные');
-const notFoundError = new NotFoundError('Запрашиваемый пользователь не найден');
+const CastError = new NotFoundError('Запрашиваемый пользователь не найден');
 
 module.exports.getAllUsers = (req, res) => {
   User.find({})
-    .then((users) => res.send({ data: users }))
+    .then((users) => res.send(users))
     .catch(() => {
       return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
     });
@@ -19,11 +18,12 @@ module.exports.getAllUsers = (req, res) => {
 
 module.exports.getNecessaryUser = (req, res) => {
   User.findById(req.params.userId)
-    .then((user) => res.send({ data: user }))
+    .orFail(() => CastError)
+    .then((user) => res.send(user))
     .catch((err) => {
-      if (err.name === 'NotFoundError') {
+      if (err.name === 'CastError') {
         // 404
-        return res.status(notFoundError.statusCode).send(notFoundError.message);
+        return res.status(CastError.statusCode).send(CastError.message);
       } else {
         return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
       }
@@ -35,11 +35,15 @@ module.exports.postNewUser = (req, res) => {
   const { name, about, avatar } = req.body;
 
   User.create({ name, about, avatar })
-    .then((user) => res.send({ data: user }))
+    .then((user) => {
+      res.send(user);
+    })
     .catch((err) => {
-      if (err.name === 'IncorrectInputError') {
+      // ValidationError - ошибка валидации в mongoose (валидация делается автоматически по схеме в папке models)
+      if (err.name === 'ValidationError') {
+        const ValidationError = new IncorrectInputError(`Некорректные входные данные. ${err}`);
         // 400
-        return res.status(incorrectInputError.statusCode).send(incorrectInputError.message);
+        return res.status(ValidationError.statusCode).send(ValidationError.message);
       } else {
         return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
       }
@@ -50,18 +54,27 @@ module.exports.patchUserInfo = (req, res) => {
   // Получим из объекта запроса имя и характеристику пользователя
   const { name, about } = req.body;
 
+  if (!name && !about) {
+    const ValidationError = new IncorrectInputError(`Поля "name" и "about" не могут быть пустыми одновременно`);
+    return res.status(ValidationError.statusCode).send(ValidationError.message);
+  }
+
   User.findByIdAndUpdate(req.user._id, {
     name,
-    about
-  }, { new: true })
-    .then((user) => res.send({ data: user }))
+    about,
+  }, { new: true, runValidators: true })
+    .orFail(() => CastError)
+  // Особенность mongoose: при сохранении данных (POST) валидация происходит автоматически, а
+  // при обновлении (PATCH) для валидации надо добавлять вручную опцию: runValidators: true
+    .then((user) => res.send(user))
     .catch((err) => {
-      if (err.name === 'IncorrectInputError') {
+      if (err.name === 'ValidationError') {
+        const ValidationError = new IncorrectInputError(`Некорректные входные данные. ${err}`);
         // 400
-        return res.status(incorrectInputError.statusCode).send(incorrectInputError.message);
-      } else if (err.name === 'NotFoundError') {
+        return res.status(ValidationError.statusCode).send(ValidationError.message);
+      } else if (err.name === 'CastError') {
         // 404
-        return res.status(notFoundError.statusCode).send(notFoundError.message);
+        return res.status(CastError.statusCode).send(CastError.message);
       } else {
         return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
       }
@@ -72,17 +85,24 @@ module.exports.patchUserAvatar = (req, res) => {
   // Получим из объекта запроса аватар пользователя
   const { avatar } = req.body;
 
+  if (!avatar) {
+    const ValidationError = new IncorrectInputError(`Поле "avatar" не может быть пустым`);
+    return res.status(ValidationError.statusCode).send(ValidationError.message);
+  }
+
   User.findByIdAndUpdate(req.user._id, {
-    avatar
-  }, { new: true })
-    .then((user) => res.send({ data: user }))
+    avatar,
+  }, { new: true, runValidators: true })
+    .orFail(() => CastError)
+    .then((user) => res.send(user))
     .catch((err) => {
-      if (err.name === 'IncorrectInputError') {
+      if (err.name === 'ValidationError') {
+        const ValidationError = new IncorrectInputError(`Некорректные входные данные. ${err}`);
         // 400
-        return res.status(incorrectInputError.statusCode).send(incorrectInputError.message);
-      } else if (err.name === 'NotFoundError') {
+        return res.status(ValidationError.statusCode).send(ValidationError.message);
+      } else if (err.name === 'CastError') {
         // 404
-        return res.status(notFoundError.statusCode).send(notFoundError.message);
+        return res.status(CastError.statusCode).send(CastError.message);
       } else {
         return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
       }
