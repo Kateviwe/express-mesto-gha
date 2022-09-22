@@ -1,6 +1,7 @@
 // Файл контроллеров
 
-const { IncorrectInputError, NotFoundError } = require('../errors/errors');
+const { IncorrectInputError } = require('../errors/incorrect-input-error');
+const { NotFoundError } = require('../errors/not-found-error');
 // Импортируем модель 'user'
 const User = require('../models/user');
 

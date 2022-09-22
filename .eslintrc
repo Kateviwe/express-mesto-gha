@@ -5,6 +5,11 @@
     "no-console": "off",
     "quotes": ["off", "backtick"],
     "linebreak-style": ["error", "unix"],
-    "multiline": "never"
+    "no-unexpected-multiline": "error",
+    "no-else-return": "off",
+    "arrow-body-style": "off",
+    "max-len": "off",
+    "consistent-return": "off",
+    "object-curly-newline": "off"
   }
 }

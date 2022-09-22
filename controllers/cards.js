@@ -1,6 +1,8 @@
 // Файл контроллеров
 
-const { IncorrectInputError, NotFoundError, NoPermissionError } = require('../errors/errors');
+const { IncorrectInputError } = require('../errors/incorrect-input-error');
+const { NotFoundError } = require('../errors/not-found-error');
+const { NoPermissionError } = require('../errors/no-permission-error');
 // Импортируем модель 'card'
 const Card = require('../models/card');
 
@@ -25,7 +27,7 @@ module.exports.deleteNecessaryCard = (req, res) => {
     .then((card) => {
       if (JSON.stringify(card.owner) === JSON.stringify(req.user._id)) {
         card.remove()
-          .then(res.send(`Удалена карточка с id: ${card._id}`))
+          .then(res.send(`Удалена карточка с id: ${card._id}`));
       } else {
         // 403
         return res.status(NotOwnerError.statusCode).send(NotOwnerError.message);
