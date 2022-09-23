@@ -15,7 +15,7 @@ module.exports.getAllUsers = (req, res) => {
     .catch(() => {
       return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
     });
-}; //OK
+};
 
 module.exports.getNecessaryUser = (req, res) => {
   User.findById(req.params.userId)
@@ -53,7 +53,7 @@ module.exports.postNewUser = (req, res) => {
         return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
       }
     });
-}; // OK
+};
 
 module.exports.patchUserInfo = (req, res) => {
   // Получим из объекта запроса имя и характеристику пользователя
