@@ -8,6 +8,7 @@ const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
 
 const { NotFoundError } = require('./errors/not-found-error');
+
 const { PORT = 3000 } = process.env;
 
 // Создадим приложение методом express()
