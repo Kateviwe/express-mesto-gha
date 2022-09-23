@@ -2,12 +2,14 @@
 
 const { IncorrectInputError } = require('../errors/incorrect-input-error');
 const { NotFoundError } = require('../errors/not-found-error');
+const { BadRequestError } = require('../errors/bad-request');
 // Импортируем модель 'user'
 const User = require('../models/user');
 
 const ERROR_CODE = 500;
 // Данные для обработки ошибок
-const CastError = new NotFoundError('Запрашиваемый пользователь не найден');
+const NotFound = new NotFoundError('Запрашиваемый пользователь не найден');
+const CastError = new BadRequestError('Некорректный id пользователя');
 
 module.exports.getAllUsers = (req, res) => {
   User.find({})
@@ -19,16 +21,15 @@ module.exports.getAllUsers = (req, res) => {
 
 module.exports.getNecessaryUser = (req, res) => {
   User.findById(req.params.userId)
-    .orFail(() => CastError)
+    .orFail(() => NotFound)
     .then((user) => res.send(user))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        const ValidationError = new IncorrectInputError(`Некорректный id. ${err}`);
+      if (err.name === 'CastError') {
         // 400
-        return res.status(ValidationError.statusCode).send({ message: ValidationError.message });
-      } else if (err.name === 'CastError') {
-        // 404
         return res.status(CastError.statusCode).send({ message: CastError.message });
+      } else if (err.name === 'NotFoundError') {
+        // 404
+        return res.status(NotFound.statusCode).send({ message: NotFound.message });
       } else {
         return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
       }
@@ -68,7 +69,7 @@ module.exports.patchUserInfo = (req, res) => {
     name,
     about,
   }, { new: true, runValidators: true })
-    .orFail(() => new IncorrectInputError('Некорректные входные данные'))
+    .orFail(() => NotFound)
   // Особенность mongoose: при сохранении данных (POST) валидация происходит автоматически, а
   // при обновлении (PATCH) для валидации надо добавлять вручную опцию: runValidators: true
     .then((user) => res.send(user))
@@ -77,9 +78,9 @@ module.exports.patchUserInfo = (req, res) => {
         const ValidationError = new IncorrectInputError(`Некорректные входные данные. ${err}`);
         // 400
         return res.status(ValidationError.statusCode).send({ message: ValidationError.message });
-      } else if (err.name === 'CastError') {
+      } else if (err.name === 'NotFoundError') {
         // 404
-        return res.status(CastError.statusCode).send({ message: CastError.message });
+        return res.status(NotFound.statusCode).send({ message: NotFound.message });
       } else {
         return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
       }
@@ -98,16 +99,16 @@ module.exports.patchUserAvatar = (req, res) => {
   User.findByIdAndUpdate(req.user._id, {
     avatar,
   }, { new: true, runValidators: true })
-    .orFail(() => CastError)
+    .orFail(() => NotFound)
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         const ValidationError = new IncorrectInputError(`Некорректные входные данные. ${err}`);
         // 400
         return res.status(ValidationError.statusCode).send({ message: ValidationError.message });
-      } else if (err.name === 'CastError') {
+      } else if (err.name === 'NotFoundError') {
         // 404
-        return res.status(CastError.statusCode).send({ message: CastError.message });
+        return res.status(NotFound.statusCode).send({ message: NotFound.message });
       } else {
         return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
       }

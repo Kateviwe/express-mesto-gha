@@ -11,7 +11,7 @@ const ERROR_CODE = 500;
 // Данные для обработки ошибок
 const NotFound = new NotFoundError('Запрашиваемая карточка не найдена');
 const NotOwnerError = new NoPermissionError('Удаление невозможно: это не ваша карточка');
-const CastError = new BadRequestError('Некорректный id');
+const CastError = new BadRequestError('Некорректный id карточки');
 
 module.exports.getAllCards = (req, res) => {
   Card.find({})
@@ -96,7 +96,6 @@ module.exports.deleteLikeOfCard = (req, res) => {
     .then((card) => res.send({ message: `Вы убрали лайк с карточки с id: ${card._id}` }))
     .catch((err) => {
       if (err.name === 'CastError') {
-        const ValidationError = new IncorrectInputError(`Некорректный id карточки. ${err}`);
         // 400
         return res.status(CastError.statusCode).send({ message: CastError.message });
       } else if (err.name === 'NotFoundError') {
