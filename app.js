@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
 
+const { NotFoundError } = require('./errors/not-found-error');
 const { PORT = 3000 } = process.env;
 
 // Создадим приложение методом express()
@@ -17,6 +18,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Подключаемся к серверу mongo
 mongoose.connect('mongodb://localhost:27017/mestodb');
+
+const NotFound = new NotFoundError('Запрашиваемый ресурс не найден');
 
 // Временное решение авторизации: добавляет в каждый запрос объект 'user'
 app.use((req, res, next) => {
@@ -29,6 +32,11 @@ app.use((req, res, next) => {
 
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
+// Обработка несуществующих роутов
+app.use('*', (req, res) => {
+  // 404
+  return res.status(NotFound.statusCode).send({ message: NotFound.message });
+});
 
 app.listen(PORT, () => {
   console.log(`Вы подключились к порту: ${PORT}`);
