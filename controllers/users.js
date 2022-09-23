@@ -14,9 +14,7 @@ const CastError = new BadRequestError('Некорректный id пользо�
 module.exports.getAllUsers = (req, res) => {
   User.find({})
     .then((users) => res.send(users))
-    .catch(() => {
-      return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
-    });
+    .catch(() => res.status(ERROR_CODE).send({ message: 'Произошла ошибка' }));
 };
 
 module.exports.getNecessaryUser = (req, res) => {
@@ -27,12 +25,12 @@ module.exports.getNecessaryUser = (req, res) => {
       if (err.name === 'CastError') {
         // 400
         return res.status(CastError.statusCode).send({ message: CastError.message });
-      } else if (err.name === 'NotFoundError') {
+      }
+      if (err.name === 'NotFoundError') {
         // 404
         return res.status(NotFound.statusCode).send({ message: NotFound.message });
-      } else {
-        return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
       }
+      return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
     });
 };
 
@@ -45,25 +43,20 @@ module.exports.postNewUser = (req, res) => {
       res.send(user);
     })
     .catch((err) => {
-      // ValidationError - ошибка валидации в mongoose (валидация делается автоматически по схеме в папке models)
+      // ValidationError - ошибка валидации в mongoose
+      // Валидация делается автоматически по схеме в папке models
       if (err.name === 'ValidationError') {
         const ValidationError = new IncorrectInputError(`Некорректные входные данные. ${err}`);
         // 400
         return res.status(ValidationError.statusCode).send({ message: ValidationError.message });
-      } else {
-        return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
       }
+      return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
     });
 };
 
 module.exports.patchUserInfo = (req, res) => {
   // Получим из объекта запроса имя и характеристику пользователя
   const { name, about } = req.body;
-
-  if (!name && !about) {
-    const ValidationError = new IncorrectInputError(`Поля "name" и "about" не могут быть пустыми одновременно`);
-    return res.status(ValidationError.statusCode).send(ValidationError.message);
-  }
 
   User.findByIdAndUpdate(req.user._id, {
     name,
@@ -78,23 +71,18 @@ module.exports.patchUserInfo = (req, res) => {
         const ValidationError = new IncorrectInputError(`Некорректные входные данные. ${err}`);
         // 400
         return res.status(ValidationError.statusCode).send({ message: ValidationError.message });
-      } else if (err.name === 'NotFoundError') {
+      }
+      if (err.name === 'NotFoundError') {
         // 404
         return res.status(NotFound.statusCode).send({ message: NotFound.message });
-      } else {
-        return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
       }
+      return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
     });
 };
 
 module.exports.patchUserAvatar = (req, res) => {
   // Получим из объекта запроса аватар пользователя
   const { avatar } = req.body;
-
-  if (!avatar) {
-    const ValidationError = new IncorrectInputError(`Поле "avatar" не может быть пустым`);
-    return res.status(ValidationError.statusCode).send(ValidationError.message);
-  }
 
   User.findByIdAndUpdate(req.user._id, {
     avatar,
@@ -106,11 +94,11 @@ module.exports.patchUserAvatar = (req, res) => {
         const ValidationError = new IncorrectInputError(`Некорректные входные данные. ${err}`);
         // 400
         return res.status(ValidationError.statusCode).send({ message: ValidationError.message });
-      } else if (err.name === 'NotFoundError') {
+      }
+      if (err.name === 'NotFoundError') {
         // 404
         return res.status(NotFound.statusCode).send({ message: NotFound.message });
-      } else {
-        return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
       }
+      return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
     });
 };

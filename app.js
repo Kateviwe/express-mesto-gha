@@ -34,11 +34,7 @@ app.use((req, res, next) => {
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
 // Обработка несуществующих роутов
-app.use('*', (req, res) => {
-  // 404
-  return res.status(NotFound.statusCode).send({ message: NotFound.message });
-});
+// 404
+app.use('*', (req, res) => res.status(NotFound.statusCode).send({ message: NotFound.message }));
 
-app.listen(PORT, () => {
-  console.log(`Вы подключились к порту: ${PORT}`);
-});
+app.listen(PORT);

@@ -13,7 +13,7 @@ const cardSchema = new mongoose.Schema({
   },
   owner: {
     // Mongo автоматически создаёт поле _id для каждого документа. Так можно связать 2 документа.
-    // Чтобы сделать это на уровне схемы, полю следует установить тип: mongoose.Schema.Types.ObjectId, а
+    // На уровне схемы: полю следует установить тип: mongoose.Schema.Types.ObjectId, а
     // также свойство ref (имя модели, на которую мы ссылаемся)
     type: mongoose.Schema.Types.ObjectId,
     ref: 'user',

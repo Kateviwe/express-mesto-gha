@@ -16,35 +16,33 @@ const CastError = new BadRequestError('Некорректный id карточ�
 module.exports.getAllCards = (req, res) => {
   Card.find({})
     .then((cards) => res.send(cards))
-    .catch(() => {
-      return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
-    });
+    .catch(() => res.status(ERROR_CODE).send({ message: 'Произошла ошибка' }));
 };
 
 module.exports.deleteNecessaryCard = (req, res) => {
   Card.findById(req.params.cardId)
-  // Если, например, карточка была удалена, и мы делаем запрос на ее повторное удаление, появится ошибка
+  // Если, например, карточка была удалена, и мы делаем запрос
+  // на ее повторное удаление, появится ошибка
     // orFail только кидает ошибку - не обрабатывает
     .orFail(() => NotFound)
     .then((card) => {
       if (JSON.stringify(card.owner) === JSON.stringify(req.user._id)) {
-        card.remove()
-          .then(res.send({ message: `Удалена карточка с id: ${card._id}` }));
-      } else {
-        // 403
-        return res.status(NotOwnerError.statusCode).send({ message: NotOwnerError.message });
+        card.remove();
+        return res.send({ message: `Удалена карточка с id: ${card._id}` });
       }
+      // 403
+      return res.status(NotOwnerError.statusCode).send({ message: NotOwnerError.message });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
         // 400
         return res.status(CastError.statusCode).send({ message: CastError.message });
-      } else if (err.name === 'NotFoundError') {
+      }
+      if (err.name === 'NotFoundError') {
         // 404
         return res.status(NotFound.statusCode).send({ message: NotFound.message });
-      } else {
-        return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
       }
+      return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
     });
 };
 
@@ -59,9 +57,8 @@ module.exports.postNewCard = (req, res) => {
         const ValidationError = new IncorrectInputError(`Некорректные входные данные. ${err}`);
         // 400
         return res.status(ValidationError.statusCode).send({ message: ValidationError.message });
-      } else {
-        return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
       }
+      return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
     });
 };
 
@@ -78,12 +75,12 @@ module.exports.putLikeToCard = (req, res) => {
       if (err.name === 'CastError') {
         // 400
         return res.status(CastError.statusCode).send({ message: CastError.message });
-      } else if (err.name === 'NotFoundError') {
+      }
+      if (err.name === 'NotFoundError') {
         // 404
         return res.status(NotFound.statusCode).send({ message: NotFound.message });
-      } else {
-        return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
       }
+      return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
     });
 };
 
@@ -98,11 +95,11 @@ module.exports.deleteLikeOfCard = (req, res) => {
       if (err.name === 'CastError') {
         // 400
         return res.status(CastError.statusCode).send({ message: CastError.message });
-      } else if (err.name === 'NotFoundError') {
+      }
+      if (err.name === 'NotFoundError') {
         // 404
         return res.status(NotFound.statusCode).send({ message: NotFound.message });
-      } else {
-        return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
       }
+      return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
     });
 };
