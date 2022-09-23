@@ -30,13 +30,13 @@ module.exports.deleteNecessaryCard = (req, res) => {
           .then(res.send(`Удалена карточка с id: ${card._id}`));
       } else {
         // 403
-        return res.status(NotOwnerError.statusCode).send(NotOwnerError.message);
+        return res.status(NotOwnerError.statusCode).send({ message: NotOwnerError.message });
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
         // 404
-        return res.status(CastError.statusCode).send(CastError.message);
+        return res.status(CastError.statusCode).send({ message: CastError.message });
       } else {
         return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
       }
@@ -53,7 +53,7 @@ module.exports.postNewCard = (req, res) => {
       if (err.name === 'ValidationError') {
         const ValidationError = new IncorrectInputError(`Некорректные входные данные. ${err}`);
         // 400
-        return res.status(ValidationError.statusCode).send(ValidationError.message);
+        return res.status(ValidationError.statusCode).send({ message: ValidationError.message });
       } else {
         return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
       }
@@ -72,7 +72,7 @@ module.exports.putLikeToCard = (req, res) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         // 404
-        return res.status(CastError.statusCode).send(CastError.message);
+        return res.status(CastError.statusCode).send({ message: CastError.message });
       } else {
         return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
       }
@@ -89,7 +89,7 @@ module.exports.deleteLikeOfCard = (req, res) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         // 404
-        return res.status(CastError.statusCode).send(CastError.message);
+        return res.status(CastError.statusCode).send({ message: CastError.message });
       } else {
         return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
       }

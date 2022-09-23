@@ -15,16 +15,20 @@ module.exports.getAllUsers = (req, res) => {
     .catch(() => {
       return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
     });
-};
+}; //OK
 
 module.exports.getNecessaryUser = (req, res) => {
   User.findById(req.params.userId)
     .orFail(() => CastError)
     .then((user) => res.send(user))
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
+        const ValidationError = new IncorrectInputError(`Некорректный id. ${err}`);
+        // 400
+        return res.status(ValidationError.statusCode).send({ message: ValidationError.message });
+      } else if (err.name === 'CastError') {
         // 404
-        return res.status(CastError.statusCode).send(CastError.message);
+        return res.status(CastError.statusCode).send({ message: CastError.message });
       } else {
         return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
       }
@@ -49,7 +53,7 @@ module.exports.postNewUser = (req, res) => {
         return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
       }
     });
-};
+}; // OK
 
 module.exports.patchUserInfo = (req, res) => {
   // Получим из объекта запроса имя и характеристику пользователя
@@ -72,10 +76,10 @@ module.exports.patchUserInfo = (req, res) => {
       if (err.name === 'ValidationError') {
         const ValidationError = new IncorrectInputError(`Некорректные входные данные. ${err}`);
         // 400
-        return res.status(ValidationError.statusCode).send(ValidationError.message);
+        return res.status(ValidationError.statusCode).send({ message: ValidationError.message });
       } else if (err.name === 'CastError') {
         // 404
-        return res.status(CastError.statusCode).send(CastError.message);
+        return res.status(CastError.statusCode).send({ message: CastError.message });
       } else {
         return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
       }
@@ -100,10 +104,10 @@ module.exports.patchUserAvatar = (req, res) => {
       if (err.name === 'ValidationError') {
         const ValidationError = new IncorrectInputError(`Некорректные входные данные. ${err}`);
         // 400
-        return res.status(ValidationError.statusCode).send(ValidationError.message);
+        return res.status(ValidationError.statusCode).send({ message: ValidationError.message });
       } else if (err.name === 'CastError') {
         // 404
-        return res.status(CastError.statusCode).send(CastError.message);
+        return res.status(CastError.statusCode).send({ message: CastError.message });
       } else {
         return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
       }
