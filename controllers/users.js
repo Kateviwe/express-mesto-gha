@@ -19,7 +19,7 @@ module.exports.getAllUsers = (req, res) => {
 
 module.exports.getNecessaryUser = (req, res) => {
   User.findById(req.params.userId)
-    .orFail(() => new IncorrectInputError(`Некорректный id`))
+    .orFail(() => CastError)
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -68,7 +68,7 @@ module.exports.patchUserInfo = (req, res) => {
     name,
     about,
   }, { new: true, runValidators: true })
-    .orFail(() => CastError)
+    .orFail(() => new IncorrectInputError('Некорректные входные данные'))
   // Особенность mongoose: при сохранении данных (POST) валидация происходит автоматически, а
   // при обновлении (PATCH) для валидации надо добавлять вручную опцию: runValidators: true
     .then((user) => res.send(user))
