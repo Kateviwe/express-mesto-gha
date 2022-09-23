@@ -2,14 +2,16 @@
 
 const { IncorrectInputError } = require('../errors/incorrect-input-error');
 const { NotFoundError } = require('../errors/not-found-error');
+const { BadRequestError } = require('../errors/bad-request');
 const { NoPermissionError } = require('../errors/no-permission-error');
 // Импортируем модель 'card'
 const Card = require('../models/card');
 
 const ERROR_CODE = 500;
 // Данные для обработки ошибок
-const CastError = new NotFoundError('Запрашиваемая карточка не найдена');
+const NotFound = new NotFoundError('Запрашиваемая карточка не найдена');
 const NotOwnerError = new NoPermissionError('Удаление невозможно: это не ваша карточка');
+const CastError = new BadRequestError('Некорректный id');
 
 module.exports.getAllCards = (req, res) => {
   Card.find({})
@@ -23,7 +25,7 @@ module.exports.deleteNecessaryCard = (req, res) => {
   Card.findById(req.params.cardId)
   // Если, например, карточка была удалена, и мы делаем запрос на ее повторное удаление, появится ошибка
     // orFail только кидает ошибку - не обрабатывает
-    .orFail(() => CastError)
+    .orFail(() => NotFound)
     .then((card) => {
       if (JSON.stringify(card.owner) === JSON.stringify(req.user._id)) {
         card.remove()
@@ -34,13 +36,12 @@ module.exports.deleteNecessaryCard = (req, res) => {
       }
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        const ValidationError = new IncorrectInputError(`Некорректный id карточки. ${err}`);
+      if (err.name === 'CastError') {
         // 400
-        return res.status(ValidationError.statusCode).send({ message: ValidationError.message });
-      } else if (err.name === 'CastError') {
-        // 404
         return res.status(CastError.statusCode).send({ message: CastError.message });
+      } else if (err.name === 'NotFoundError') {
+        // 404
+        return res.status(NotFound.statusCode).send({ message: NotFound.message });
       } else {
         return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
       }
@@ -71,16 +72,15 @@ module.exports.putLikeToCard = (req, res) => {
     $addToSet: { likes: req.user._id },
     // "new: true" вернет видоизмененный массив, а не оригинал
   }, { new: true })
-    .orFail(() => CastError)
+    .orFail(() => NotFound)
     .then((card) => res.send({ message: `Вы поставили лайк карточке с id: ${card._id}` }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        const ValidationError = new IncorrectInputError(`Некорректный id карточки. ${err}`);
+      if (err.name === 'CastError') {
         // 400
-        return res.status(ValidationError.statusCode).send({ message: ValidationError.message });
-      } else if (err.name === 'CastError') {
-        // 404
         return res.status(CastError.statusCode).send({ message: CastError.message });
+      } else if (err.name === 'NotFoundError') {
+        // 404
+        return res.status(NotFound.statusCode).send({ message: NotFound.message });
       } else {
         return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
       }
@@ -92,16 +92,16 @@ module.exports.deleteLikeOfCard = (req, res) => {
     // Если пользователь уже лайкал карточку - удалим лайк, иначе - нет
     $pull: { likes: req.user._id },
   }, { new: true })
-    .orFail(() => CastError)
+    .orFail(() => NotFound)
     .then((card) => res.send({ message: `Вы убрали лайк с карточки с id: ${card._id}` }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'CastError') {
         const ValidationError = new IncorrectInputError(`Некорректный id карточки. ${err}`);
         // 400
-        return res.status(ValidationError.statusCode).send({ message: ValidationError.message });
-      } else if (err.name === 'CastError') {
-        // 404
         return res.status(CastError.statusCode).send({ message: CastError.message });
+      } else if (err.name === 'NotFoundError') {
+        // 404
+        return res.status(NotFound.statusCode).send({ message: NotFound.message });
       } else {
         return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
       }
