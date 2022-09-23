@@ -44,7 +44,7 @@ module.exports.postNewUser = (req, res) => {
       if (err.name === 'ValidationError') {
         const ValidationError = new IncorrectInputError(`Некорректные входные данные. ${err}`);
         // 400
-        return res.status(ValidationError.statusCode).send(ValidationError.message);
+        return res.status(ValidationError.statusCode).send({ message: ValidationError.message });
       } else {
         return res.status(ERROR_CODE).send({ message: 'Произошла ошибка' });
       }
