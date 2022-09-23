@@ -27,14 +27,18 @@ module.exports.deleteNecessaryCard = (req, res) => {
     .then((card) => {
       if (JSON.stringify(card.owner) === JSON.stringify(req.user._id)) {
         card.remove()
-          .then(res.send(`Удалена карточка с id: ${card._id}`));
+          .then(res.send({ message: `Удалена карточка с id: ${card._id}` }));
       } else {
         // 403
         return res.status(NotOwnerError.statusCode).send({ message: NotOwnerError.message });
       }
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
+        const ValidationError = new IncorrectInputError(`Некорректный id карточки. ${err}`);
+        // 400
+        return res.status(ValidationError.statusCode).send({ message: ValidationError.message });
+      } else if (err.name === 'CastError') {
         // 404
         return res.status(CastError.statusCode).send({ message: CastError.message });
       } else {
@@ -68,9 +72,13 @@ module.exports.putLikeToCard = (req, res) => {
     // "new: true" вернет видоизмененный массив, а не оригинал
   }, { new: true })
     .orFail(() => CastError)
-    .then((card) => res.send(`Вы поставили лайк карточке с id: ${card._id}`))
+    .then((card) => res.send({ message: `Вы поставили лайк карточке с id: ${card._id}` }))
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
+        const ValidationError = new IncorrectInputError(`Некорректный id карточки. ${err}`);
+        // 400
+        return res.status(ValidationError.statusCode).send({ message: ValidationError.message });
+      } else if (err.name === 'CastError') {
         // 404
         return res.status(CastError.statusCode).send({ message: CastError.message });
       } else {
@@ -85,9 +93,13 @@ module.exports.deleteLikeOfCard = (req, res) => {
     $pull: { likes: req.user._id },
   }, { new: true })
     .orFail(() => CastError)
-    .then((card) => res.send(`Вы убрали лайк с карточки с id: ${card._id}`))
+    .then((card) => res.send({ message: `Вы убрали лайк с карточки с id: ${card._id}` }))
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
+        const ValidationError = new IncorrectInputError(`Некорректный id карточки. ${err}`);
+        // 400
+        return res.status(ValidationError.statusCode).send({ message: ValidationError.message });
+      } else if (err.name === 'CastError') {
         // 404
         return res.status(CastError.statusCode).send({ message: CastError.message });
       } else {
