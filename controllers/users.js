@@ -19,7 +19,7 @@ module.exports.getAllUsers = (req, res) => {
 
 module.exports.getNecessaryUser = (req, res) => {
   User.findById(req.params.userId)
-    .orFail(() => new IncorrectInputError(`Некорректный id. ${err}`))
+    .orFail(() => new IncorrectInputError(`Некорректный id`))
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
