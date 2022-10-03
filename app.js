@@ -7,6 +7,11 @@ const bodyParser = require('body-parser');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
 
+const {
+  postNewUser,
+  login,
+} = require('./controllers/users');
+
 const { NotFoundError } = require('./errors/not-found-error');
 
 const { PORT = 3000 } = process.env;
@@ -33,6 +38,9 @@ app.use((req, res, next) => {
 
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
+app.post('/signup', postNewUser);
+app.post('/signin', login);
+
 // Обработка несуществующих роутов
 // 404
 app.use('*', (req, res) => res.status(NotFound.statusCode).send({ message: NotFound.message }));
