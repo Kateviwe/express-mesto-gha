@@ -5,8 +5,6 @@ const bcrypt = require('bcryptjs');
 
 const { NotAuth } = require('../errors/not-auth-error');
 
-const NotAuthorised = new NotAuth('Ошибка аутентификации');
-
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -43,6 +41,8 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
+    // API не будет возвращать хеш пароль
+    select: false,
   },
 });
 
@@ -51,12 +51,13 @@ const userSchema = new mongoose.Schema({
 userSchema.statics.findUserByCredentials = function findUserByCredentials(email, password) {
   // Если почта и пароль совпадают с теми, что есть в базе, пользователь входит на сайт
   // Иначе — получает сообщение об ошибке
+  // В случае аутентификации хеш пароля нужен => добавим метод select со строкой '+password'
   // this - модель User
-  return this.findOne({ email })
+  return this.findOne({ email }).select('+password')
     .then((user) => {
       // Если пользователь с таким email не нашелся
       if (!user) {
-        return Promise.reject(NotAuthorised);
+        return Promise.reject(new NotAuth('Ошибка аутентификации'));
       }
       // Если нашелся: захешируем пароль и сравним с хешем в базе
       // password - пароль, который ввел пользователь
@@ -65,7 +66,7 @@ userSchema.statics.findUserByCredentials = function findUserByCredentials(email,
       // bcrypt.compare работает асинхронно => результат обработаем в след. then
         .then((arePasswordsMatched) => {
           if (!arePasswordsMatched) {
-            return Promise.reject(NotAuthorised);
+            return Promise.reject(new NotAuth('Ошибка аутентификации'));
           }
           return user;
         });

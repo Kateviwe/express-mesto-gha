@@ -6,11 +6,13 @@ const {
   getNecessaryUser,
   patchUserInfo,
   patchUserAvatar,
+  getInfoAboutMe,
 } = require('../controllers/users');
 
 router.get('/', getAllUsers);
-router.get('/:userId', getNecessaryUser);
 router.patch('/me', patchUserInfo);
 router.patch('/me/avatar', patchUserAvatar);
+router.get('/me', getInfoAboutMe);
+router.get('/:userId', getNecessaryUser);
 
 module.exports = router;
