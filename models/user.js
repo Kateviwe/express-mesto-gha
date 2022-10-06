@@ -5,6 +5,8 @@ const bcrypt = require('bcryptjs');
 
 const { NotAuth } = require('../errors/not-auth-error');
 
+const regExpUrl = /^https?:\/\/(www\.)?[a-zA-Z0-9-]\.[\w/\-.~:?#[]@!$&'\(\)*\+,;=]#?$/;
+
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -21,6 +23,12 @@ const userSchema = new mongoose.Schema({
   avatar: {
     type: String,
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
+    validate: {
+      validator(url) {
+        return regExpUrl.test(url);
+      },
+      message: 'Ссылка на аватар невалидна',
+    },
   },
   email: {
     type: String,
@@ -75,3 +83,5 @@ userSchema.statics.findUserByCredentials = function findUserByCredentials(email,
 
 // Создание модели по схеме, экспорт
 module.exports = mongoose.model('user', userSchema);
+
+module.exports = regExpUrl;
