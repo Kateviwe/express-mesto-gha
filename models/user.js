@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 
 const { NotAuth } = require('../errors/not-auth-error');
 
-const regExpUrl = /^https?:\/\/(www\.)?[a-zA-Z0-9-]\.[\w/\-.~:?#[]@!$&'\(\)*\+,;=]#?$/;
+const regExpUrl = /^(http)s?:\/\/(www\.)?[a-zA-Z0-9-]+\.([\w\-.~:/?#[\]@!$&'()*+,;=]+)/;
 
 const userSchema = new mongoose.Schema({
   name: {
