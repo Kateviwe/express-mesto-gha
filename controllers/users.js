@@ -149,12 +149,12 @@ module.exports.login = (req, res, next) => {
       // 'httpOnly: true' - доступ из JavaScript запрещен
       // 'sameSite: true' - защита от автоматической отправки кук
       // Указываем браузеру, чтобы он посылал куки только, если запрос сделан с того же домена
-      return res.cookie('jwt', token, {
+      res.cookie('jwt', token, {
         maxAge: 3600000 * 24 * 7,
         httpOnly: true,
         sameSite: true,
-      })
-        .end();
+      });
+      res.send({ email });
     })
     .catch((err) => {
       if (err.name === 'NotAuthorised') {
