@@ -2,24 +2,26 @@
 // celebrate позволяет валидировать тело запроса, заголовки, параметры или req.query
 const { celebrate, Joi } = require('celebrate');
 
-const { regExpUrl } = require('../models/user');
+const regExpUrl = /^(http)s?:\/\/(www\.)?[a-zA-Z0-9-]+\.([\w\-.~:/?#[\]@!$&'()*+,;=]+)/;
 
 const postNewCardValidation = celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30).required(),
-    link: Joi.string().required(),
+    link: Joi.string().required().regex(RegExp(regExpUrl)),
   }),
 });
 
 const defineCardIdValidation = celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().alphanum().length(24).required(),
+    cardId: Joi.string().alphanum().length(24).required()
+      .hex(),
   }),
 });
 
 const defineUserIdValidation = celebrate({
   params: Joi.object().keys({
-    userId: Joi.string().alphanum().length(24).required(),
+    userId: Joi.string().alphanum().length(24).required()
+      .hex(),
   }),
 });
 
@@ -61,4 +63,5 @@ module.exports = {
   patchUserAvatarValidation,
   postNewUserValidation,
   loginValidation,
+  regExpUrl,
 };

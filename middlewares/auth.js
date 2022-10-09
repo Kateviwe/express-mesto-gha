@@ -17,7 +17,7 @@ module.exports = (req, res, next) => {
   // Объявим payload снаружи, а проверим значение внутри try (из-за блочной области видимости)
   let payload;
   try {
-    payload = jwt.verify(token, NODE_ENV === 'production' ? JWT_SECRET : 'dev_secret');
+    payload = jwt.verify(token, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret');
   } catch (err) {
     next(new NotAuth('Ошибка аутентификации'));
   }

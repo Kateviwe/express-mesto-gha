@@ -1,5 +1,4 @@
 // Файл контроллеров
-require('dotenv').config();
 // Импортируем модуль для хеширования пароля перед сохранением в базу данных
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -23,18 +22,15 @@ module.exports.getAllUsers = (req, res, next) => {
 
 module.exports.getNecessaryUser = (req, res, next) => {
   User.findById(req.params.userId)
-    .orFail(() => new NotFoundError('Запрашиваемый пользователь не найден'))
+    .orFail(new NotFoundError('Запрашиваемый пользователь не найден'))
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'CastError') {
         // 400
         next(new BadRequestError('Некорректный id пользователя'));
+      } else {
+        next(err);
       }
-      if (err.name === 'NotFoundError') {
-        // 404
-        next(new NotFoundError('Запрашиваемый пользователь не найден'));
-      }
-      next(err);
     });
 };
 
@@ -76,8 +72,9 @@ module.exports.postNewUser = (req, res, next) => {
               if (err.name === 'ValidationError') {
                 // 400
                 next(new IncorrectInputError(`Некорректные входные данные. ${err}`));
+              } else {
+                next(err);
               }
-              next(err);
             });
         });
     })
@@ -85,8 +82,9 @@ module.exports.postNewUser = (req, res, next) => {
       if (err.name === 'ConflictError') {
         // 409
         next(new UserDuplicationError('Пользователь с таким email уже существует'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 
@@ -98,7 +96,7 @@ module.exports.patchUserInfo = (req, res, next) => {
     name,
     about,
   }, { new: true, runValidators: true })
-    .orFail(() => new NotFoundError('Запрашиваемый пользователь не найден'))
+    .orFail(new NotFoundError('Запрашиваемый пользователь не найден'))
   // Особенность mongoose: при сохранении данных (POST) валидация происходит автоматически, а
   // при обновлении (PATCH) для валидации надо добавлять вручную опцию: runValidators: true
     .then((user) => res.send(user))
@@ -106,12 +104,9 @@ module.exports.patchUserInfo = (req, res, next) => {
       if (err.name === 'ValidationError') {
         // 400
         next(new IncorrectInputError(`Некорректные входные данные. ${err}`));
+      } else {
+        next(err);
       }
-      if (err.name === 'NotFoundError') {
-        // 404
-        next(new NotFoundError('Запрашиваемый пользователь не найден'));
-      }
-      next(err);
     });
 };
 
@@ -122,18 +117,15 @@ module.exports.patchUserAvatar = (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, {
     avatar,
   }, { new: true, runValidators: true })
-    .orFail(() => new NotFoundError('Запрашиваемый пользователь не найден'))
+    .orFail(new NotFoundError('Запрашиваемый пользователь не найден'))
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         // 400
         next(new IncorrectInputError(`Некорректные входные данные. ${err}`));
+      } else {
+        next(err);
       }
-      if (err.name === 'NotFoundError') {
-        // 404
-        next(new NotFoundError('Запрашиваемый пользователь не найден'));
-      }
-      next(err);
     });
 };
 
@@ -166,24 +158,22 @@ module.exports.login = (req, res, next) => {
       if (err.name === 'NotAuthorised') {
         // 401
         next(new NotAuth('Ошибка аутентификации'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 
 module.exports.getInfoAboutMe = (req, res, next) => {
   User.findById(req.user._id)
-    .orFail(() => new NotFoundError('Запрашиваемый пользователь не найден'))
+    .orFail(new NotFoundError('Запрашиваемый пользователь не найден'))
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'CastError') {
         // 400
         next(new BadRequestError('Некорректный id пользователя'));
+      } else {
+        next(err);
       }
-      if (err.name === 'NotFoundError') {
-        // 404
-        next(new NotFoundError('Запрашиваемый пользователь не найден'));
-      }
-      next(err);
     });
 };

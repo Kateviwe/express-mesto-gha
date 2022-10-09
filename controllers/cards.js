@@ -19,7 +19,7 @@ module.exports.deleteNecessaryCard = (req, res, next) => {
   // Если, например, карточка была удалена, и мы делаем запрос
   // на ее повторное удаление, появится ошибка
     // orFail только кидает ошибку - не обрабатывает
-    .orFail(() => new NotFoundError('Запрашиваемая карточка не найдена'))
+    .orFail(new NotFoundError('Запрашиваемая карточка не найдена'))
     .then((card) => {
       if (JSON.stringify(card.owner) === JSON.stringify(req.user._id)) {
         card.remove();
@@ -32,12 +32,9 @@ module.exports.deleteNecessaryCard = (req, res, next) => {
       if (err.name === 'CastError') {
         // 400
         next(new BadRequestError('Некорректный id карточки'));
+      } else {
+        next(err);
       }
-      if (err.name === 'NotFoundError') {
-        // 404
-        next(new NotFoundError('Запрашиваемая карточка не найдена'));
-      }
-      next(err);
     });
 };
 
@@ -51,10 +48,12 @@ module.exports.postNewCard = (req, res, next) => {
       if (err.name === 'ValidationError') {
         // 400
         next(new IncorrectInputError(`Некорректные входные данные. ${err}`));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
+
 // "new: true" - вернет видоизмененный массив, а не оригинал
 module.exports.putLikeToCard = (req, res, next) => {
   Card.findByIdAndUpdate(req.params.cardId, {
@@ -62,18 +61,15 @@ module.exports.putLikeToCard = (req, res, next) => {
     $addToSet: { likes: req.user._id },
     // "new: true" вернет видоизмененный массив, а не оригинал
   }, { new: true })
-    .orFail(() => new NotFoundError('Запрашиваемая карточка не найдена'))
+    .orFail(new NotFoundError('Запрашиваемая карточка не найдена'))
     .then((card) => res.send({ message: `Вы поставили лайк карточке с id: ${card._id}` }))
     .catch((err) => {
       if (err.name === 'CastError') {
         // 400
         next(new BadRequestError('Некорректный id карточки'));
+      } else {
+        next(err);
       }
-      if (err.name === 'NotFoundError') {
-        // 404
-        next(new NotFoundError('Запрашиваемая карточка не найдена'));
-      }
-      next(err);
     });
 };
 
@@ -82,17 +78,14 @@ module.exports.deleteLikeOfCard = (req, res, next) => {
     // Если пользователь уже лайкал карточку - удалим лайк, иначе - нет
     $pull: { likes: req.user._id },
   }, { new: true })
-    .orFail(() => new NotFoundError('Запрашиваемая карточка не найдена'))
+    .orFail(new NotFoundError('Запрашиваемая карточка не найдена'))
     .then((card) => res.send({ message: `Вы убрали лайк с карточки с id: ${card._id}` }))
     .catch((err) => {
       if (err.name === 'CastError') {
         // 400
         next(new BadRequestError('Некорректный id карточки'));
+      } else {
+        next(err);
       }
-      if (err.name === 'NotFoundError') {
-        // 404
-        next(new NotFoundError('Запрашиваемая карточка не найдена'));
-      }
-      next(err);
     });
 };

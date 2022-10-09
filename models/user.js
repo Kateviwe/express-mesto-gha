@@ -3,9 +3,8 @@ const validator = require('validator');
 // Импортируем модуль для хеширования пароля перед сохранением в базу данных
 const bcrypt = require('bcryptjs');
 
+const { regExpUrl } = require('../middlewares/validation');
 const { NotAuth } = require('../errors/not-auth-error');
-
-const regExpUrl = /^(http)s?:\/\/(www\.)?[a-zA-Z0-9-]+\.([\w\-.~:/?#[\]@!$&'()*+,;=]+)/;
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -83,5 +82,3 @@ userSchema.statics.findUserByCredentials = function findUserByCredentials(email,
 
 // Создание модели по схеме, экспорт
 module.exports = mongoose.model('user', userSchema);
-
-module.exports = regExpUrl;
