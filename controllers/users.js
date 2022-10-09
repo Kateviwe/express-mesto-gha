@@ -145,12 +145,11 @@ module.exports.login = (req, res, next) => {
         NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
         { expiresIn: '7d' },
       );
-      res.send({ email });
       // Запишем токен в куки, и опцией maxAge определим время хранения куки: 7 дней
       // 'httpOnly: true' - доступ из JavaScript запрещен
       // 'sameSite: true' - защита от автоматической отправки кук
       // Указываем браузеру, чтобы он посылал куки только, если запрос сделан с того же домена
-      res.cookie('jwt', token, {
+      return res.cookie('jwt', token, {
         maxAge: 3600000 * 24 * 7,
         httpOnly: true,
         sameSite: true,
