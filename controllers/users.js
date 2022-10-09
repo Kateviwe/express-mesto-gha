@@ -64,7 +64,9 @@ module.exports.postNewUser = (req, res, next) => {
             password: hash,
           })
             .then((user) => {
-              res.send(user);
+              res.send({
+                name, about, avatar, email, _id: user._id,
+              });
             })
             .catch((err) => {
               // ValidationError - ошибка валидации в mongoose
